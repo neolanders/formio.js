@@ -1,4 +1,6 @@
 import { BaseComponent } from '../base/Base';
+import { HiddenComponent } from '../hidden/Hidden';
+
 export class GmapComponent extends BaseComponent {
   constructor(component, options, data) {
     super(component, options, data);
@@ -11,6 +13,8 @@ export class GmapComponent extends BaseComponent {
     if (component.map && component.map.region) {
       src += '&region=' + component.map.region;
     }
+    // console.log('google', google);
+    // if (typeof google === 'object' && typeof google.maps === 'object') {
     BaseComponent.requireLibrary('googleMaps', 'google.maps.places', src);
   }
 
@@ -19,8 +23,19 @@ export class GmapComponent extends BaseComponent {
       class: 'map-container'
     });
     this.initGoogleMap();
+
+    let hidden  = new HiddenComponent();
+    this.info = hidden.elementInfo();
+    this.inputHidden = this.createInput(this.element);
+    // this.inputHidden.info.attr.type = "hidden";
+    this.inputHidden.info.attr.name = "gmap-info";
+    this.addHiddenInput(this.inputHidden, this.element);
+
+    this.info = super.elementInfo();
     this.input = this.createInput(this.element);
+    this.input.info.attr.name = "gmap-address";
     this.addInput(this.input, this.element);
+
     let gmapElement = this.ce('gmapElement', 'div', {
       id: this.component.map.gmapId,
       style: "min-height: 300px; height: calc(100vh - 600px);"
@@ -30,6 +45,10 @@ export class GmapComponent extends BaseComponent {
 
   setValue(value, noUpdate) {
     super.setValue(value, noUpdate, true);
+  }
+
+  addHiddenInput(input, container) {
+    super.addInput(input, container);
   }
 
   addInput(input, container) {
@@ -78,12 +97,6 @@ export class GmapComponent extends BaseComponent {
     });
   }
 
-  elementInfo() {
-    let info = super.elementInfo();
-    info.attr.class += ' Gmap-search';
-    return info;
-  }
-
   initGoogleMap() {
     BaseComponent.libraryReady('googleMaps').then((result) => {
       let defaultLatlng = new google.maps.LatLng(45.5041482, -73.5574125);
@@ -129,7 +142,8 @@ export class GmapComponent extends BaseComponent {
       geocoder.geocode({'location': latlng}, function(results, status) {
         if (status === google.maps.GeocoderStatus.OK) {
           if (results[1]) {
-            that.setValue(results[0].formatted_address);
+            // that.setValue({'address': results[0].formatted_address, 'gmap': results});
+            console.log({'address': results[0].formatted_address, 'gmap': results});
           } else {
             console.log('No results found');
           }
